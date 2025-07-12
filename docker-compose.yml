@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: veryfood_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: veryfood
+      MYSQL_USER: veryfood_user
+      MYSQL_PASSWORD: veryfood_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./backend/veeryfood_schema.sql:/docker-entrypoint-initdb.d/veeryfood_schema.sql
+    networks:
+      - veryfood_network
+
+  # Backend API
+  backend:
+    build: ./backend
+    container_name: veryfood_backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=veryfood
+      - DB_USER=veryfood_user
+      - DB_PASSWORD=veryfood_pass
+    volumes:
+      - ./backend/uploads:/app/uploads
+    depends_on:
+      - mysql
+    networks:
+      - veryfood_network
+
+  # Frontend React App
+  frontend:
+    build: ./project/project
+    container_name: veryfood_frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:3000
+    depends_on:
+      - backend
+    networks:
+      - veryfood_network
+
+volumes:
+  mysql_data:
+
+networks:
+  veryfood_network:
+    driver: bridge 
