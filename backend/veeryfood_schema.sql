@@ -1,4 +1,5 @@
 -- SQL Schema VeeryFood
+-- Database name "veryfooddd"
 
 CREATE TABLE kasir (
   id INT AUTO_INCREMENT PRIMARY KEY,
